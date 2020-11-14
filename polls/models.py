@@ -10,6 +10,9 @@ class Poll(models.Model):
     def __str__(self):
         return self.title
 
+    class Meta:
+        ordering = ('-start_date', '-end_date', )
+
 
 class Question(models.Model):
     TEXT_ANSWER = 'TA'
@@ -31,12 +34,19 @@ class Question(models.Model):
     def __str__(self):
         return self.text
 
+    class Meta:
+        ordering = ('id', )
+
 
 class Choice(models.Model):
     question = models.ForeignKey(
-        Question, on_delete=models.CASCADE, verbose_name='Вопрос')
+        Question, on_delete=models.CASCADE, verbose_name='Вопрос',
+        related_name='choices')
 
     text = models.CharField(max_length=255, verbose_name='Вариант ответа')
 
     def __str__(self):
         return self.text
+
+    class Meta:
+        ordering = ('id', )
