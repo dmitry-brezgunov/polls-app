@@ -1,13 +1,14 @@
 from polls.models import Choice, Poll, Question
 from rest_framework import serializers
 
-from .utils import ChoiceField
+from .models import UserAnswer
+from .utils import ChoiceField, QuestionChoicesForeignKey
 
 
 class DetailChoiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Choice
-        fields = ('id', 'text', )
+        fields = ('text', )
 
 
 class DetailQuestionSerializer(serializers.ModelSerializer):
@@ -28,3 +29,60 @@ class DetailPollSerializer(serializers.ModelSerializer):
             'id', 'title', 'start_date', 'end_date',
             'description', 'questions',
         )
+
+
+class UserAnswerTextSerializer(serializers.ModelSerializer):
+    question = serializers.SlugRelatedField(slug_field='text', read_only=True)
+    text_answer = serializers.CharField(required=True)
+
+    class Meta:
+        model = UserAnswer
+        fields = ('user_id', 'question', 'text_answer', )
+
+
+class UserAnswerOneChoiceSerializer(serializers.ModelSerializer):
+    question = serializers.SlugRelatedField(slug_field='text', read_only=True)
+    one_choice_answer = QuestionChoicesForeignKey(
+        slug_field='text', required=True)
+
+    class Meta:
+        model = UserAnswer
+        fields = ('user_id', 'question', 'one_choice_answer', )
+
+
+class UserAnswerMultiChoiceSerializer(serializers.ModelSerializer):
+    question = serializers.SlugRelatedField(slug_field='text', read_only=True)
+    multi_choice_answer = QuestionChoicesForeignKey(
+        slug_field='text', many=True, allow_empty=False)
+
+    class Meta:
+        model = UserAnswer
+        fields = ('user_id', 'question', 'multi_choice_answer', )
+
+
+class UserAnswerSerializer(serializers.ModelSerializer):
+    one_choice_answer = serializers.SlugRelatedField(
+        slug_field='text', read_only=True)
+
+    multi_choice_answer = serializers.SlugRelatedField(
+        slug_field='text', read_only=True, many=True)
+
+    class Meta:
+        model = UserAnswer
+        fields = ('text_answer', 'one_choice_answer', 'multi_choice_answer', )
+
+
+class PassedQuestionSerializer(serializers.ModelSerializer):
+    user_answer = UserAnswerSerializer(read_only=True, many=True)
+
+    class Meta:
+        model = Question
+        fields = ('text', 'user_answer', )
+
+
+class PassedPollSerializer(serializers.ModelSerializer):
+    questions = PassedQuestionSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Poll
+        fields = ('id', 'title', 'questions', )
