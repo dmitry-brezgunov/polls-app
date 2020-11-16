@@ -42,10 +42,10 @@ class PollAnswer(CreateModelMixin, GenericViewSet):
             return UserAnswerTextSerializer
 
     def perform_create(self, serializer):
-        question = get_object_or_404(
-            Question, pk=self.kwargs.get('question_id'))
-
         poll = get_object_or_404(Poll, pk=self.kwargs.get('poll_id'))
+
+        question = get_object_or_404(
+            Question, pk=self.kwargs.get('question_id'), poll=poll)
 
         if UserAnswer.objects.filter(
                 user_id=serializer.validated_data['user_id'],
@@ -70,3 +70,8 @@ class PassedPolls(ListModelMixin, GenericViewSet):
         user_id = self.kwargs.get('user_id')
         return get_list_or_404(
             Poll.objects.filter(user_answer__user_id=user_id).distinct())
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['user_id'] = self.kwargs['user_id']
+        return context

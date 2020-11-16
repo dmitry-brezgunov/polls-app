@@ -2,7 +2,8 @@ from polls.models import Choice, Poll, Question
 from rest_framework import serializers
 
 from .models import UserAnswer
-from .utils import ChoiceField, QuestionChoicesForeignKey
+from .utils import (ChoiceField, FilteredListSerializer,
+                    QuestionChoicesForeignKey)
 
 
 class DetailChoiceSerializer(serializers.ModelSerializer):
@@ -69,6 +70,7 @@ class UserAnswerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserAnswer
+        list_serializer_class = FilteredListSerializer
         fields = ('text_answer', 'one_choice_answer', 'multi_choice_answer', )
 
 
